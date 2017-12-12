@@ -105,13 +105,12 @@ class DaymascotasDogFoodSpider(scrapy.Spider):
             item = ProjectPetsItem()
 
             item['name'] = product.css('h2::text').extract()[0]
-            item['href'] = "http://www.daymascotas.cl" + product.css('a::attr(href)').extract()[0]
+            item['href'] = product.css('a::attr(href)').extract()[0]
 
             if product.css('del').extract_first(default='not-found') != 'not-found':
                 price = product.css('span.price ins span.woocommerce-Price-amount::text').extract()[0]
             else:
                 price = product.css('.woocommerce-Price-amount::text').extract()[0]
-            # item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
             item['price'] = parse_price(price)
 
             item['image_href'] = product.css('img::attr(src)').extract()[0]
@@ -129,7 +128,7 @@ class DaymascotasDogFoodSpider(scrapy.Spider):
 
 # class DaymascotasDogMedSpider(scrapy.Spider):
 #     name = 'daymascotas_dog_meds'
-#     allowed_domains = ['http://www.daymascotas.cl']
+#     allowed_domains = ['http://daymascotas.cl']
 
 #     start_urls = [
 #         'http://www.daymascotas.cl/perros-2/medicamentos-2?page=%s' % page for page in range(1, 3)
@@ -185,34 +184,40 @@ class DaymascotasDogFoodSpider(scrapy.Spider):
 #         if next_page is not None:
 #             yield response.follow(next_page, callback=self.parse)
 
-# class DaymascotasCatFoodSpider(scrapy.Spider):
-#     name = 'daymascotas_cat_food'
-#     allowed_domains = ['http://www.daymascotas.cl']
+class DaymascotasCatFoodSpider(scrapy.Spider):
+    """ Spider only for the dog food pages """
+    name = 'daymascotas_cat_food'
+    allowed_domains = ['http://daymascotas.cl']
 
-#     start_urls = [
-#         'http://www.daymascotas.cl/gatos-2/alimentos?page=%s' % page for page in range(1, 6)
-#     ]
+    start_urls = [
+        'http://daymascotas.cl/categoria-producto/alimentos-gato/page/%s/' % page for page in range(1, 5)
+    ]
  
-#     def parse(self, response):
-#         for product in response.css('div.in'):
-#             item = ProjectPetsItem()
+    def parse(self, response):
+        for product in response.selector.css('li.show-links-onimage'):
+            item = ProjectPetsItem()
 
-#             item['name'] = product.css('h1 a::text').extract_first()
-#             item['href'] = "http://www.daymascotas.cl" + product.css('p.foto a::attr(href)').extract()[0]
-#             price = product.css('p.precio::text').extract()[0]
-#             item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
-#             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
-#             item['store'] = "Day Mascotas"
-#             item['category'] = "food"
-#             item['animal'] = "cat"
-#             item['date'] = datetime.today()
-#             item['date_str'] = item['date'].strftime('%Y-%m-%d')
+            item['name'] = product.css('h2::text').extract()[0]
+            item['href'] = product.css('a::attr(href)').extract()[0]
+
+            if product.css('del').extract_first(default='not-found') != 'not-found':
+                price = product.css('span.price ins span.woocommerce-Price-amount::text').extract()[0]
+            else:
+                price = product.css('.woocommerce-Price-amount::text').extract()[0]
+            item['price'] = parse_price(price)
+
+            item['image_href'] = product.css('img::attr(src)').extract()[0]
+            item['store'] = "Day Mascotas"
+            item['category'] = "food"
+            item['animal'] = "cat"
+            item['date'] = datetime.today()
+            item['date_str'] = item['date'].strftime('%Y-%m-%d')
             
-#             yield item
+            yield item
     
-#         next_page = response.css('li.next a::attr(href)').extract_first()
-#         if next_page is not None:
-#             yield response.follow(next_page, callback=self.parse)
+        next_page = response.css('.next::attr(href)').extract_first()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
 # class DaymascotasCatMedSpider(scrapy.Spider):
 #     name = 'daymascotas_cat_meds'
