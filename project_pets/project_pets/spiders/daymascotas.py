@@ -6,6 +6,8 @@ from datetime import datetime
 import scrapy
 from project_pets.items import ProjectPetsItem
 
+from project_pets.spiders.utils import parse_price
+
 
 class DaymascotasSpider(scrapy.Spider):
     """ Spider that crawls food, meds and accs for dogs and cats """
@@ -80,10 +82,10 @@ class DaymascotasSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
     
-    @staticmethod
-    def parse_price(work_str):
-        """ Recieves a string and removes everything except the numbers to transform it to a integer """
-        return int(re.sub('[A-z$,.]', '', work_str).strip())
+    # @staticmethod
+    # def parse_price(work_str):
+    #     """ Recieves a string and removes everything except the numbers to transform it to a integer """
+    #     return int(re.sub('[A-z$,.]', '', work_str).strip())
 
 class DaymascotasDogFoodSpider(scrapy.Spider):
     """ Spider only for the dog food pages """
@@ -104,8 +106,14 @@ class DaymascotasDogFoodSpider(scrapy.Spider):
 
             item['name'] = product.css('h2::text').extract()[0]
             item['href'] = "http://www.daymascotas.cl" + product.css('a::attr(href)').extract()[0]
-            price = product.css('.woocommerce-Price-amount::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+
+            if product.css('del').extract_first(default='not-found') != 'not-found':
+                price = product.css('span.price ins span.woocommerce-Price-amount::text').extract()[0]
+            else:
+                price = product.css('.woocommerce-Price-amount::text').extract()[0]
+            # item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(price)
+
             item['image_href'] = product.css('img::attr(src)').extract()[0]
             item['store'] = "Day Mascotas"
             item['category'] = "food"
