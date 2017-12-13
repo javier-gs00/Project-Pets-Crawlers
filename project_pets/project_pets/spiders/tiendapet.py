@@ -45,6 +45,44 @@ class TiendapetDogFoodSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
+class TiendapetCatFoodSpider(scrapy.Spider):
+    """ Spider only for the cat food pages """
+    name = 'tiendapet_cat_food'
+    allowed_domains = ['https://www.tiendapet.cl']
+
+    start_urls = ['https://www.tiendapet.cl/catalogo/gato/alimentos/%s' % page for page in range(1,20)]
+    # start_urls = ['https://www.tiendapet.cl/catalogo/gato/alimentos']
+
+    def parse(self, response):
+        for product in response.selector.css('div.block-producto'):
+            scraped_product = Product()
+            scraped_product.name = product.css('h5::text').extract()[0]
+            scraped_product.href = product.css('a.catalogo_click_detail::attr(href)').extract()[0]
+            scraped_product.price = product.css('table').extract()[0]
+            scraped_product.image_href = product.css('img::attr(src)').extract()[0]
+            scraped_product.category = "food"
+            scraped_product.animal = "cat"
+
+            product_list = parse_price_table(scraped_product)
+
+            for final_product in product_list:
+                item = ProjectPetsItem()
+                item['name'] = parse_name(final_product.name)
+                item['href'] = final_product.href
+                item['price'] = final_product.price
+                item['image_href'] = final_product.image_href
+                item['store'] = final_product.store
+                item['category'] = final_product.category
+                item['animal'] = final_product.animal
+                item['date'] = final_product.date
+                item['date_str'] = final_product.date_str
+
+                yield item
+
+        next_page = response.css('a.fa-chevron-right::attr(href)').extract_first()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
+
 
 # Create a helper class to manipulate extracted data
 class Product(object):
@@ -71,23 +109,18 @@ def parse_price_table(scraped_product):
 
     # find out how many rows the table data has
     rows = html_table.count('<tr>')
-    # print(rows)
     # find out how many data points the table has.
     # If it has just one, it means the product its out of stock
     table_data_count = html_table.count('<td>')
-    # print(table_data_count)
     # If it has just one data_point don't save the product and skip it.
     if table_data_count != 1:
         # iterate over the table rows to create new objects(products)
         while rows > 0:
-            # print(html_table)
-            # print(type(html_table))
             # locate the span tags that indicate a discount
             try:
                 span_start = html_table.index('<span')
             except ValueError:
                 span_start = 0
-            # span_end = html_table.index('</span>')
 
             # locate the first set of table data elements containing the
             # end of the product name
