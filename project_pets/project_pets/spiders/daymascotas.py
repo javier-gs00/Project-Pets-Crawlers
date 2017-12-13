@@ -4,7 +4,6 @@ Module containing the spiders for http://www.daymascotas.cl
 from datetime import datetime
 import scrapy
 from project_pets.items import ProjectPetsItem
-
 from project_pets.spiders.utils import parse_price, parse_name
 
 

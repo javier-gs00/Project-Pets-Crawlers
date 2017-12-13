@@ -1,11 +1,9 @@
 """
 Module containing the spiders for https://www.pethappy.cl
 """
-import re
 from datetime import datetime
 import scrapy
 from project_pets.items import ProjectPetsItem
-
 from project_pets.spiders.utils import parse_name, parse_price
 
 
