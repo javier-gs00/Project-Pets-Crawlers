@@ -12,8 +12,8 @@ class TiendapetDogFoodSpider(scrapy.Spider):
     name = 'tiendapet_dog_food'
     allowed_domains = ['https://www.tiendapet.cl']
 
-    start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos']
-    # start_urls = ['http://daymascotas.cl/categoria-producto/alimentos-perro/page/%s/' % page for page in range(1, 9)]
+    start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos/%s' % page for page in range(1,45)]
+    # start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos/5']
 
     def parse(self, response):
         for product in response.selector.css('div.block-producto'):
@@ -41,9 +41,9 @@ class TiendapetDogFoodSpider(scrapy.Spider):
 
                 yield item
 
-        # next_page = response.css('.next::attr(href)').extract_first()
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        next_page = response.css('a.fa-chevron-right::attr(href)').extract_first()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
 
 # Create a helper class to manipulate extracted data
@@ -84,7 +84,7 @@ def parse_price_table(scraped_product):
             # print(type(html_table))
             # locate the span tags that indicate a discount
             try:
-                span_start = html_table.index('<span>')
+                span_start = html_table.index('<span')
             except ValueError:
                 span_start = 0
             # span_end = html_table.index('</span>')
