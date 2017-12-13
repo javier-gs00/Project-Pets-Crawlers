@@ -6,6 +6,8 @@ from datetime import datetime
 import scrapy
 from project_pets.items import ProjectPetsItem
 
+from project_pets.spiders.utils import parse_name, parse_price
+
 
 class PethappySpider(scrapy.Spider):
     """ Spider that crawls food, meds and accs for dogs and cats """
@@ -63,9 +65,9 @@ class PethappySpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            item['price'] = self.parse_price(product.css('p.precio::text').extract()[0])
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = item_category
@@ -78,12 +80,9 @@ class PethappySpider(scrapy.Spider):
         next_page = response.css('li.next a::attr(href)').extract_first()
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
-    
-    @staticmethod
-    def parse_price(work_str):
-        return int(re.sub('[A-z$,.]', '', work_str).strip())
 
 class PethappyDogFoodSpider(scrapy.Spider):
+    """ Spider only for the dog food pages """
     name = 'pethappy_dog_food'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -95,10 +94,9 @@ class PethappyDogFoodSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "food"
@@ -113,6 +111,7 @@ class PethappyDogFoodSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
 class PethappyDogMedSpider(scrapy.Spider):
+    """ Spider only for the dog med pages """
     name = 'pethappy_dog_meds'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -124,10 +123,9 @@ class PethappyDogMedSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "medicine"
@@ -142,6 +140,7 @@ class PethappyDogMedSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
 class PethappyDogAccSpider(scrapy.Spider):
+    """ Spider only for the dog accessories pages """
     name = 'pethappy_dog_accessories'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -153,10 +152,9 @@ class PethappyDogAccSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "accessories"
@@ -171,6 +169,7 @@ class PethappyDogAccSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
 class PethappyCatFoodSpider(scrapy.Spider):
+    """ Spider only for the cat food pages """
     name = 'pethappy_cat_food'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -182,10 +181,9 @@ class PethappyCatFoodSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "food"
@@ -200,6 +198,7 @@ class PethappyCatFoodSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
 class PethappyCatMedSpider(scrapy.Spider):
+    """ Spider only for the cat med pages """
     name = 'pethappy_cat_meds'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -211,10 +210,9 @@ class PethappyCatMedSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "medicine"
@@ -229,6 +227,7 @@ class PethappyCatMedSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
 class PethappyCatAccSpider(scrapy.Spider):
+    """ Spider only for the cat accessories pages """
     name = 'pethappy_cat_accessories'
     allowed_domains = ['https://www.pethappy.cl']
 
@@ -240,10 +239,9 @@ class PethappyCatAccSpider(scrapy.Spider):
         for product in response.css('div.in'):
             item = ProjectPetsItem()
 
-            item['name'] = product.css('h1 a::text').extract_first()
+            item['name'] = parse_name(product.css('h1 a::text').extract_first())
             item['href'] = "https://www.pethappy.cl" + product.css('p.foto a::attr(href)').extract()[0]
-            price = product.css('p.precio::text').extract()[0]
-            item['price'] = int(re.sub("[A-z$,.]", "", price).strip())
+            item['price'] = parse_price(product.css('p.precio::text').extract()[0])
             item['image_href'] = product.css('p a img::attr(src)').extract()[0]
             item['store'] = "Pet Happy"
             item['category'] = "accessories"
@@ -256,18 +254,3 @@ class PethappyCatAccSpider(scrapy.Spider):
         next_page = response.css('li.next a::attr(href)').extract_first()
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
-
-
-    # def parse(self, response):
-    #     for product in response.xpath('.//div[contains(@class, "in")]'):
-    #         item = ProjectPetsItem()
-
-    #         item['name'] = product.xpath('//h1//a/text()').extract()
-    #         item['href'] = product.xpath('//p//a/@href').extract()
-    #         item['price'] = product.xpath('//p[contains(@class, "precio")]/text()').extract()
-    #         item['image_href'] = product.xpath('//p//a//img/@src').extract()
-    #         item['store'] = "Pet Happy"
-    #         item['category'] = "Food"
-    #         item['animal'] = "Dog"
-            
-    #         yield item
