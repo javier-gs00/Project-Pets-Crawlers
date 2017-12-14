@@ -83,6 +83,51 @@ class TiendapetDogMedSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
+class TiendapetDogAccSpider(scrapy.Spider):
+    """ Spider only for the dog accessories pages """
+    name = 'tiendapet_dog_acc'
+    allowed_domains = ['https://www.tiendapet.cl']
+
+    def start_requests(self):
+        urls_acc = ['https://www.tiendapet.cl/catalogo/perro/accesorios/%s' % page for page in range(1,18)]
+        urls_toys = ['https://www.tiendapet.cl/catalogo/perro/accesorios/%s' % page for page in range(1,10)]
+        urls = urls_acc + urls_toys
+        
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
+    # start_urls = ['https://www.tiendapet.cl/catalogo/perro/accesorios/', 'https://www.tiendapet.cl/catalogo/perro/juguetes/']
+
+    def parse(self, response):
+        for product in response.selector.css('div.block-producto'):
+            scraped_product = Product()
+            scraped_product.name = parse_name(product.css('h5::text').extract()[0])
+            scraped_product.href = product.css('a.catalogo_click_detail::attr(href)').extract()[0]
+            scraped_product.price = product.css('table').extract()[0]
+            scraped_product.image_href = product.css('img::attr(src)').extract()[0]
+            scraped_product.category = "accesory"
+            scraped_product.animal = "dog"
+
+            product_list = parse_price_table(scraped_product)
+
+            for final_product in product_list:
+                item = ProjectPetsItem()
+                item['name'] = final_product.name
+                item['href'] = final_product.href
+                item['price'] = final_product.price
+                item['image_href'] = final_product.image_href
+                item['store'] = final_product.store
+                item['category'] = final_product.category
+                item['animal'] = final_product.animal
+                item['date'] = final_product.date
+                item['date_str'] = final_product.date_str
+
+                yield item
+
+        next_page = response.css('a.fa-chevron-right::attr(href)').extract_first()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
+
 class TiendapetCatFoodSpider(scrapy.Spider):
     """ Spider only for the cat food pages """
     name = 'tiendapet_cat_food'
@@ -99,6 +144,44 @@ class TiendapetCatFoodSpider(scrapy.Spider):
             scraped_product.price = product.css('table').extract()[0]
             scraped_product.image_href = product.css('img::attr(src)').extract()[0]
             scraped_product.category = "food"
+            scraped_product.animal = "cat"
+
+            product_list = parse_price_table(scraped_product)
+
+            for final_product in product_list:
+                item = ProjectPetsItem()
+                item['name'] = parse_name(final_product.name)
+                item['href'] = final_product.href
+                item['price'] = final_product.price
+                item['image_href'] = final_product.image_href
+                item['store'] = final_product.store
+                item['category'] = final_product.category
+                item['animal'] = final_product.animal
+                item['date'] = final_product.date
+                item['date_str'] = final_product.date_str
+
+                yield item
+
+        next_page = response.css('a.fa-chevron-right::attr(href)').extract_first()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
+
+class TiendapetCatMedSpider(scrapy.Spider):
+    """ Spider only for the cat meds pages """
+    name = 'tiendapet_cat_med'
+    allowed_domains = ['https://www.tiendapet.cl']
+
+    # start_urls = ['https://www.tiendapet.cl/catalogo/gato/farmacia/%s' % page for page in range(1,9)]
+    start_urls = ['https://www.tiendapet.cl/catalogo/gato/farmacia']
+
+    def parse(self, response):
+        for product in response.selector.css('div.block-producto'):
+            scraped_product = Product()
+            scraped_product.name = product.css('h5::text').extract()[0]
+            scraped_product.href = product.css('a.catalogo_click_detail::attr(href)').extract()[0]
+            scraped_product.price = product.css('table').extract()[0]
+            scraped_product.image_href = product.css('img::attr(src)').extract()[0]
+            scraped_product.category = "medicine"
             scraped_product.animal = "cat"
 
             product_list = parse_price_table(scraped_product)
