@@ -67,7 +67,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 2
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'project_pets.pipelines.ProjectPetsPipeline': 300,
+   'project_pets.pipelines.MongoDBPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

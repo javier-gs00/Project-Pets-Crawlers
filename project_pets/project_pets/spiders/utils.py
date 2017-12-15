@@ -23,3 +23,9 @@ def parse_name(work_str):
         work_str = work_str.replace(search, replacement)
 
     return work_str
+
+        # ('á', 'a'),
+        # ('é', 'e'),
+        # ('í', 'i'),
+        # ('ó', 'o'),
+        # ('ú', 'u'),

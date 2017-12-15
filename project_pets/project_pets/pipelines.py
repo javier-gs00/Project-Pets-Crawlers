@@ -5,10 +5,12 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
+from scrapy.exceptions import DropItem
 import logging
 import pymongo
 
-class ProjectPetsPipeline(object):
+class MongoDBPipeline(object):
+    """ Save an item to MongoDB """
     collection_name = 'products'
 
     def __init__(self, mongo_uri, mongo_db):
@@ -34,7 +36,27 @@ class ProjectPetsPipeline(object):
         self.client.close()
     
     def process_item(self, item, spider):
-        # how to handle each product
-        self.db[self.collection_name].insert(dict(item))
-        logging.debug('Product added to MongoDB')
-        return item
+        """ Looks for a duplicate. If it isn't found it
+            inserts the document, otherwise it drops it. """
+        # looks for a duplicate
+        duplicate_check = self.db[self.collection_name].find({'name': item['name'], 'store': item['store'], 'category': item['category'], 'animal': item['animal']}).count()
+        if duplicate_check == 0:
+            self.db[self.collection_name].insert(dict(item))
+            logging.debug('Product added to MongoDB')
+            return item
+        else:
+            # logging.debug('Duplicate found. Skipping product')
+            raise DropItem('Duplicate found. Skipping product: %s' % item['name'])
+        # return item
+
+# class DuplicatesPipeline(object):
+#     """ Looks for duplicates of items that were already processed """
+#     def __init__(self):
+#         self.ids_seen = set()
+
+#     def process_item(self, item, spider):
+#         if item['id'] in self.ids_seen:
+#             raise DropItem("Duplicate item found: %s" % item)
+#         else:
+#             self.ids_seen.add(item['id'])
+#             return item

@@ -12,8 +12,8 @@ class TiendapetDogFoodSpider(scrapy.Spider):
     name = 'tiendapet_dog_food'
     allowed_domains = ['https://www.tiendapet.cl']
 
-    start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos/%s' % page for page in range(1,45)]
-    # start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos/5']
+    # start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos/%s' % page for page in range(1,45)]
+    start_urls = ['https://www.tiendapet.cl/catalogo/perro/alimentos']
 
     def parse(self, response):
         for product in response.selector.css('div.block-producto'):
