@@ -18,7 +18,8 @@ class TiendapetDogFoodSpider(scrapy.Spider):
     def parse(self, response):
         for product in response.selector.css('div.block-producto'):
             scraped_product = Product()
-            scraped_product.name = parse_name(product.css('h5::text').extract()[0])
+            # scraped_product.name = parse_name(product.css('h5::text').extract()[0])
+            scraped_product.name = parse_name(product.css('a.catalogo_click_detail::attr(href)').extract_first().split('/')[6])
             scraped_product.href = product.css('a.catalogo_click_detail::attr(href)').extract()[0]
             scraped_product.price = product.css('table').extract()[0]
             scraped_product.image_href = product.css('img::attr(src)').extract()[0]
